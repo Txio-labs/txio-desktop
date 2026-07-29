@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "txio Universal Multi-Chain Desktop App",
   "author": "King Vic",
-  "license": "ISC",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/Txio-labs/txio.git"
