@@ -1,6 +1,6 @@
 import { app, BrowserWindow, shell, session, protocol, net } from "electron"
 import path from "path"
-import { fileURLToPath } from "url"
+import { fileURLToPath, pathToFileURL } from "url"
 import crypto from "crypto"
 import fs from "fs"
 
@@ -10,7 +10,9 @@ const __dirname = path.dirname(__filename)
 // Scope navigation to the app's own packaged directory, not the entire file:// scheme.
 // This prevents a compromised renderer from navigating to arbitrary local files
 // (e.g. file:///etc/passwd) while still allowing in-app navigation.
-const APP_ROOT_URL = pathToFileURL(path.join(__dirname, "..")).href
+// Append a trailing slash so that prefix-check cannot be bypassed by a sibling
+// directory that shares the same name prefix (e.g. "txio-desktop-evil/").
+const APP_ROOT_URL = pathToFileURL(path.join(__dirname, "..")).href.replace(/\/?$/, "/")
 
 const CSP_NONCE = crypto.randomBytes(16).toString("base64")
 
@@ -64,8 +66,18 @@ const createWindow = () => {
     }
   })
 
-  win.loadFile(path.join(__dirname, "../dist/index.html"))
+  win.loadFile(path.join(__dirname, "../dist/index.html")).catch((err) => {
+    console.error("Failed to load app HTML:", err)
+    app.quit()
+  })
 }
+
+// Top-level safety net: catch any unhandled rejections that slip through
+// individual .catch() handlers (e.g. from protocol or session setup).
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled promise rejection during startup:", err)
+  app.quit()
+})
 
 app.whenReady().then(() => {
   protocol.handle("file", async (request) => {
@@ -111,6 +123,9 @@ app.whenReady().then(() => {
       createWindow()
     }
   })
+}).catch((err) => {
+  console.error("Failed during app initialization:", err)
+  app.quit()
 })
 
 app.on("window-all-closed", () => {
