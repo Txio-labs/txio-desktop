@@ -1,6 +1,6 @@
 import { app, BrowserWindow, shell, session, protocol, net } from "electron"
 import path from "path"
-import { fileURLToPath } from "url"
+import { fileURLToPath, pathToFileURL } from "url"
 import crypto from "crypto"
 import fs from "fs"
 
