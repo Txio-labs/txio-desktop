@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    name: build (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      # Skip electron-builder's local codesign auto-discovery so the smoke
+      # build stays unsigned everywhere. Real signing is a separate,
+      # credential-dependent concern (out of scope for this CI gate).
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build packaged app (unsigned)
+        run: npm run build -- --publish=never
+
+      - name: Verify packaged asar contains required source files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          asar_path=$(find dist -maxdepth 6 -name "app.asar" -print -quit)
+          if [ -z "$asar_path" ]; then
+            echo "::error::electron-builder did not produce an app.asar under dist/"
+            exit 1
+          fi
+          echo "Inspecting $asar_path"
+
+          # asar list emits backslash-separated paths on Windows runners;
+          # normalize to forward slashes so the check is OS-independent.
+          npx --yes asar list "$asar_path" | tr '\\' '/' > "$RUNNER_TEMP/asar-contents.txt"
+
+          missing=0
+          for required in "/src/index.js" "/src/security.js"; do
+            if ! grep -qx "$required" "$RUNNER_TEMP/asar-contents.txt"; then
+              echo "::error::Required source file missing from packaged asar: $required"
+              missing=1
+            fi
+          done
+
+          if [ "$missing" -ne 0 ]; then
+            echo "--- full asar contents ---"
+            cat "$RUNNER_TEMP/asar-contents.txt"
+            exit 1
+          fi
+
+          echo "OK: app.asar contains all required source files"
