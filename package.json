@@ -14,7 +14,7 @@
   "scripts": {
     "start": "electron .",
     "build": "electron-builder",
-    "test": "node --test test-security.mjs"
+    "test": "node --test test-security.mjs test-window-recovery.mjs"
   },
   "dependencies": {},
   "devDependencies": {

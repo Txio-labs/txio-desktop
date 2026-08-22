@@ -1,9 +1,10 @@
-import { app, BrowserWindow, shell, session, protocol } from "electron"
+import { app, BrowserWindow, shell, session, protocol, dialog } from "electron"
 import path from "path"
 import { fileURLToPath, pathToFileURL } from "url"
 import crypto from "crypto"
 import fs from "fs"
 import { isPathInside, isUrlInsideRoot } from "./security.js"
+import { formatRendererCrashSummary, shouldReloadAfterCrash } from "./window-recovery.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -45,6 +46,76 @@ const createWindow = () => {
       nodeIntegration: false,
       webSecurity: true,
     },
+  })
+
+  let lastRendererCrashAt = 0
+  let recoveryDialogShown = false
+
+  const handleRendererRecovery = (event, details) => {
+    const summary = formatRendererCrashSummary(details)
+    console.error(summary)
+
+    const shouldReload = shouldReloadAfterCrash(lastRendererCrashAt, Date.now(), 15000)
+    lastRendererCrashAt = Date.now()
+
+    if (recoveryDialogShown) {
+      return
+    }
+
+    recoveryDialogShown = true
+
+    if (shouldReload) {
+      const reload = () => {
+        recoveryDialogShown = false
+        if (!win.isDestroyed()) {
+          win.reload()
+        }
+      }
+
+      dialog
+        .showMessageBox(win, {
+          type: "warning",
+          title: "Renderer failed",
+          message: "The app window stopped responding or crashed.",
+          detail: "The renderer process has been restarted. You can continue or quit the app.",
+          buttons: ["Reload", "Quit"],
+          defaultId: 0,
+          cancelId: 1,
+        })
+        .then((result) => {
+          if (result.response === 0) {
+            reload()
+          } else {
+            app.quit()
+          }
+        })
+        .catch(() => {
+          reload()
+        })
+      return
+    }
+
+    dialog.showMessageBoxSync(win, {
+      type: "error",
+      title: "Renderer crashed",
+      message: "The app window crashed and automatic recovery was blocked to prevent a reload loop.",
+      detail: "Please quit and reopen the app.",
+      buttons: ["Quit"],
+      defaultId: 0,
+    })
+    app.quit()
+  }
+
+  win.webContents.on("render-process-gone", (event, details) => {
+    handleRendererRecovery(event, details)
+  })
+
+  win.webContents.on("unresponsive", () => {
+    console.warn("Renderer is unresponsive")
+  })
+
+  win.webContents.on("responsive", () => {
+    console.info("Renderer recovered from unresponsive state")
   })
 
   win.webContents.setWindowOpenHandler(({ url }) => {
