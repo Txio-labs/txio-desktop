@@ -38,6 +38,7 @@
     },
     "files": [
       "src/index.js",
+      "src/security.js",
       "src/assets/**",
       "dist/**/*",
       "build/**/*",
