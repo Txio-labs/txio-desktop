@@ -1,0 +1,82 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Txio",
+  "mainBinaryName": "txio",
+  "version": "1.0.0",
+  "identifier": "xyz.txio.desktop",
+  "build": {
+    "beforeDevCommand": "bash scripts/dev-frontend.sh",
+    "devUrl": "http://localhost:3000",
+    "beforeBuildCommand": "bash scripts/build-frontend.sh",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [],
+    "security": {
+      "csp": {
+        "default-src": "'self'",
+        "script-src": "'self' 'wasm-unsafe-eval'",
+        "style-src": "'self' 'unsafe-inline'",
+        "img-src": "'self' data: blob: https:",
+        "font-src": "'self' data:",
+        "connect-src": "'self' ipc: http://ipc.localhost https: wss:",
+        "worker-src": "'self' blob:",
+        "frame-src": "'self'",
+        "object-src": "'none'",
+        "base-uri": "'self'",
+        "form-action": "'self'"
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "category": "DeveloperTool",
+    "shortDescription": "One console for every chain",
+    "longDescription": "Txio builds, simulates, signs and runs RPC calls and transactions on Sui, Ethereum and EVM chains, Solana, Aptos and Stellar from one interface.",
+    "license": "MIT",
+    "copyright": "Copyright (c) 2026 Victor Oladimeji",
+    "publisher": "Txio Labs",
+    "homepage": "https://txio.xyz",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "linux": {
+      "deb": {
+        "depends": ["libwebkit2gtk-4.1-0", "libgtk-3-0"],
+        "section": "devel"
+      },
+      "rpm": {
+        "depends": ["webkit2gtk4.1", "gtk3"]
+      },
+      "appimage": {
+        "bundleMediaFramework": false
+      }
+    },
+    "macOS": {
+      "minimumSystemVersion": "11.0"
+    },
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    },
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEYzRTYwOTA5OTRBREQ2QTEKUldTaDFxMlVDUW5tODZmZ0E3TEtNTVRScVlpWldzRjBiL29zQVgvNGhNaUhLM0lDOExiZ3RLWHkK",
+      "endpoints": [
+        "https://github.com/Txio-labs/txio-desktop/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
+}
