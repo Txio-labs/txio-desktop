@@ -1,0 +1,27 @@
+{
+    "version": "1.0.0",
+    "description": "Multi-chain RPC and transaction console",
+    "homepage": "https://txio-labs.github.io/txio-desktop/",
+    "license": "MIT",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/Txio-labs/txio-desktop/releases/download/v1.0.0/Txio_1.0.0_x64-setup.exe#/dl.7z",
+            "hash": "e728bdd23660abf815569b944a3807f36b656fce7fc9687e06fc56f34db6377a"
+        }
+    },
+    "pre_install": "Remove-Item \"$dir\\$PLUGINSDIR\", \"$dir\\uninstall.exe\" -Recurse -Force -ErrorAction SilentlyContinue",
+    "shortcuts": [
+        [
+            "txio.exe",
+            "Txio"
+        ]
+    ],
+    "checkver": "github",
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/Txio-labs/txio-desktop/releases/download/v$version/Txio_$version_x64-setup.exe#/dl.7z"
+            }
+        }
+    }
+}
