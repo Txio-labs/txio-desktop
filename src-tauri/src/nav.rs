@@ -4,6 +4,7 @@
 //! - `api.txio.xyz` and `txio.xyz` are rewritten onto the app origin. This is how OAuth
 //!   finishes inside the app: the provider redirects to the API callback, which goes
 //!   through the shell's proxy and cookie jar, then on to the app page.
+//! - `txio.xyz/desktop-auth` opens in the system browser: desktop sign-in happens there.
 //! - Sign-in pages of the OAuth providers the API supports load in the window.
 //! - Every other http(s) link opens in the system browser.
 
@@ -74,6 +75,11 @@ pub fn decide(u: &Url, app_origin: &Url) -> Decision {
         "mailto" => return Decision::External,
         _ => return Decision::Block,
     }
+    // Sign-in happens on the website in the system browser, which hands the
+    // session back through a `txio-desktop://` link (see crate::deep_link).
+    if is_site_host(u) && (u.path() == "/desktop-auth" || u.path().starts_with("/desktop-auth/")) {
+        return Decision::External;
+    }
     if is_api_host(u) || is_site_host(u) {
         let mut s = u.path().to_string();
         if let Some(q) = u.query() {
@@ -121,6 +127,17 @@ mod tests {
         assert_eq!(
             decide(&Url::parse("https://txio.xyz/workspace").unwrap(), &app()),
             Decision::Rewrite("/workspace".into())
+        );
+    }
+
+    #[test]
+    fn desktop_sign_in_opens_in_the_browser() {
+        assert_eq!(
+            decide(
+                &Url::parse("https://txio.xyz/desktop-auth?challenge=a&state=b").unwrap(),
+                &app()
+            ),
+            Decision::External
         );
     }
 

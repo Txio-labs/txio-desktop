@@ -1,3 +1,4 @@
+mod deep_link;
 mod nav;
 mod proxy;
 mod updates;
@@ -85,7 +86,6 @@ fn build_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
                 Some("CmdOrCtrl+1"),
             )?,
             &MenuItem::with_id(app, "nav:/docs", "Documentation", true, Some("CmdOrCtrl+2"))?,
-            &MenuItem::with_id(app, "nav:/", "Home", true, Some("CmdOrCtrl+0"))?,
             &PredefinedMenuItem::separator(app)?,
             &MenuItem::with_id(app, "reload", "Reload", true, Some("CmdOrCtrl+R"))?,
         ],
@@ -136,10 +136,12 @@ fn on_menu(app: &AppHandle, id: &str) {
 
 fn create_main_window(app: &AppHandle) -> tauri::Result<()> {
     let origin = app_origin();
+    // No landing page on desktop: open at sign-in. A signed-in session is sent
+    // on to /workspace by the web app.
     let url = if cfg!(debug_assertions) {
-        WebviewUrl::App("/".into())
+        WebviewUrl::App("signin".into())
     } else {
-        WebviewUrl::CustomProtocol(origin.clone())
+        WebviewUrl::CustomProtocol(origin.join("signin").expect("signin path"))
     };
 
     let nav_app = app.clone();
@@ -194,6 +196,9 @@ pub fn run() {
         .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
             show_main(app)
         }))
+        // After single-instance: with its "deep-link" feature, a link that starts a
+        // second process is forwarded to this one's on_open_url.
+        .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
@@ -224,6 +229,22 @@ pub fn run() {
             }
 
             create_main_window(&handle)?;
+
+            {
+                use tauri_plugin_deep_link::DeepLinkExt;
+                // Linux (AppImage, dev) and Windows dev builds register the scheme at
+                // runtime; installers register it themselves.
+                #[cfg(any(target_os = "linux", all(debug_assertions, windows)))]
+                let _ = app.deep_link().register_all();
+                let links_app = handle.clone();
+                app.deep_link().on_open_url(move |event| {
+                    deep_link::handle(&links_app, &event.urls());
+                });
+                // Launched by a link while the app was closed.
+                if let Ok(Some(urls)) = app.deep_link().get_current() {
+                    deep_link::handle(&handle, &urls);
+                }
+            }
 
             let tray_menu = Menu::with_items(
                 app,
