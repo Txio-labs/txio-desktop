@@ -1,7 +1,7 @@
 {
   "name": "txio-desktop",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Txio desktop app: the multi-chain RPC and transaction console, native on Linux, macOS and Windows",
   "author": "King Vic",
   "license": "MIT",

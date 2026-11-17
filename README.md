@@ -18,13 +18,13 @@ computer. Every release is also on the [Releases](https://github.com/Txio-labs/t
 
 | System | File | How to install |
 | --- | --- | --- |
-| Debian, Ubuntu, Kali | `Txio_1.0.0_amd64.deb` | `sudo apt install ./Txio_1.0.0_amd64.deb` |
-| Fedora, openSUSE | `Txio-1.0.0-1.x86_64.rpm` | `sudo dnf install ./Txio-1.0.0-1.x86_64.rpm` |
-| Any Linux | `Txio_1.0.0_amd64.AppImage` | `chmod +x` it, then run it |
-| macOS, Apple silicon | `Txio_1.0.0_aarch64.dmg` | Open, drag to Applications |
-| macOS, Intel | `Txio_1.0.0_x64.dmg` | Open, drag to Applications |
-| Windows 10 and 11 | `Txio_1.0.0_x64-setup.exe` | Run it |
-| Windows, managed PCs | `Txio_1.0.0_x64_en-US.msi` | Deploy with your usual tools |
+| Debian, Ubuntu, Kali | `Txio_1.0.1_amd64.deb` | `sudo apt install ./Txio_1.0.1_amd64.deb` |
+| Fedora, openSUSE | `Txio-1.0.1-1.x86_64.rpm` | `sudo dnf install ./Txio-1.0.1-1.x86_64.rpm` |
+| Any Linux | `Txio_1.0.1_amd64.AppImage` | `chmod +x` it, then run it |
+| macOS, Apple silicon | `Txio_1.0.1_aarch64.dmg` | Open, drag to Applications |
+| macOS, Intel | `Txio_1.0.1_x64.dmg` | Open, drag to Applications |
+| Windows 10 and 11 | `Txio_1.0.1_x64-setup.exe` | Run it |
+| Windows, managed PCs | `Txio_1.0.1_x64_en-US.msi` | Deploy with your usual tools |
 
 **With a package manager** (updates arrive with the rest of your system):
 
