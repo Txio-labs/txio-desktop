@@ -36,7 +36,8 @@ pub fn target_path(link: &Url) -> Option<String> {
 
 fn is_token(s: &str, min: usize, max: usize) -> bool {
     (min..=max).contains(&s.len())
-        && s.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')
+        && s.bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')
 }
 
 pub fn handle(app: &AppHandle, links: &[Url]) {
@@ -57,7 +58,11 @@ mod tests {
 
     #[test]
     fn auth_link_becomes_signin_fragment() {
-        let link = Url::parse(&format!("txio-desktop://auth?code={}&state=abcdefghijklmnop", code())).unwrap();
+        let link = Url::parse(&format!(
+            "txio-desktop://auth?code={}&state=abcdefghijklmnop",
+            code()
+        ))
+        .unwrap();
         assert_eq!(
             target_path(&link).as_deref(),
             Some(format!("/signin#desktop_code={}&state=abcdefghijklmnop", code()).as_str())
@@ -71,7 +76,10 @@ mod tests {
             "https://auth?code=x&state=y".to_string(),
             format!("txio-desktop://auth?code={}", code()),
             format!("txio-desktop://auth?code={}&state=short", code()),
-            format!("txio-desktop://auth?code={}%26x%3D1&state=abcdefghijklmnop", code()),
+            format!(
+                "txio-desktop://auth?code={}%26x%3D1&state=abcdefghijklmnop",
+                code()
+            ),
         ] {
             assert_eq!(target_path(&Url::parse(&l).unwrap()), None, "{l}");
         }
