@@ -109,3 +109,26 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh workflow run pages.yml --ref main
+
+  announce:
+    # Post the release to the Telegram announcements topic, only when every
+    # platform built. The bot also announces from the workflow_run webhook, so
+    # a failure here (e.g. the bot is asleep on Render) does not lose the post;
+    # the bot posts each tag once.
+    needs: [build, notes]
+    if: ${{ success() && vars.TXIO_BOT_URL != '' }}
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Announce in Telegram
+        env:
+          TXIO_BOT_URL: ${{ vars.TXIO_BOT_URL }}
+          TXIO_BOT_ANNOUNCE_TOKEN: ${{ secrets.TXIO_BOT_ANNOUNCE_TOKEN }}
+          BODY: '{"repo":"${{ github.repository }}","tag":"${{ github.ref_name }}"}'
+        # Retries cover a cold start on Render's free plan (about 1 minute).
+        run: |
+          curl -fsS --retry 8 --retry-delay 15 --retry-all-errors --max-time 90 \
+            -X POST "$TXIO_BOT_URL/announce/release" \
+            -H "Authorization: Bearer $TXIO_BOT_ANNOUNCE_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$BODY"
