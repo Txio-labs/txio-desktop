@@ -1,9 +1,9 @@
 cask "txio" do
   arch arm: "aarch64", intel: "x64"
 
-  version "1.0.1"
-  sha256 arm:   "7c3961548773ee66f87b8e37a409cfac56e359ca69d578cbbd1e02af6c40a9f2",
-         intel: "2962c1eb30f3ee7d3667e9feecf5bc2568ca5d63d8d60d15e185a211d66adc28"
+  version "1.0.2"
+  sha256 arm:   "946db87778ecee6874cda1aea063fccfeaeecf54ce11abd3a95e8b57c4813bd5",
+         intel: "41ff07f8328f6e1887963649d67f2eb9041d386d9440f1a0a976aca36e006ad4"
 
   url "https://github.com/Txio-labs/txio-desktop/releases/download/v#{version}/Txio_#{version}_#{arch}.dmg"
   name "Txio"
