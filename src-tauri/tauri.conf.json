@@ -2,7 +2,7 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Txio",
   "mainBinaryName": "txio",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "identifier": "xyz.txio.desktop",
   "build": {
     "beforeDevCommand": "bash scripts/dev-frontend.sh",
